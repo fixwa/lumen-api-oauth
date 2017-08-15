@@ -47,3 +47,12 @@ $app->delete('/posts/{post_id}/comments/{comment_id}', 'PostCommentController@de
 $app->post('/oauth/access_token', function() use ($app){
     return response()->json($app->make('oauth2-server.authorizer')->issueAccessToken());
 });
+
+
+// Markers
+$app->get('/markers','MarkerController@index');
+//$app->post('/posts','PostController@store');
+//$app->get('/posts/{post_id}','PostController@show');
+//$app->put('/posts/{post_id}', 'PostController@update');
+//$app->patch('/posts/{post_id}', 'PostController@update');
+//$app->delete('/posts/{post_id}', 'PostController@destroy');
