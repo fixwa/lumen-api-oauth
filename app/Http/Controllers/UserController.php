@@ -11,8 +11,8 @@ class UserController extends Controller{
 
 	public function __construct(){
 
-		$this->middleware('oauth', ['except' => ['index', 'show']]);
-		$this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show']]);
+		$this->middleware('oauth', ['except' => ['index', 'show', 'store']]);
+		$this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store']]);
 	}
 
 	public function index(){
@@ -26,11 +26,15 @@ class UserController extends Controller{
 		$this->validateRequest($request);
 
 		$user = User::create([
+		            'name' => $request->get('name'),
 					'email' => $request->get('email'),
 					'password'=> Hash::make($request->get('password'))
 				]);
 
-		return $this->success("The user with with id {$user->id} has been created", 201);
+		return $this->success([
+            "message" => "The user with with id {$user->id} has been created",
+            "status" => "AUTHENTICATED",
+        ], 201);
 	}
 
 	public function show($id){
@@ -78,6 +82,7 @@ class UserController extends Controller{
 	public function validateRequest(Request $request){
 
 		$rules = [
+            'name' => 'required|min:6',
 			'email' => 'required|email|unique:users', 
 			'password' => 'required|min:6'
 		];

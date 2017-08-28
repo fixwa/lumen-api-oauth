@@ -16,13 +16,13 @@ class MarkersSeeder extends Seeder
 
         DB::table('markers')->truncate();
 
-        for ($i = 0; $i < 200; $i++) {
+        for ($i = 0; $i < 400; $i++) {
 
             DB::table('markers')->insert(
                 [
                     'title' => $faker->paragraph,
-                    'latitude' => $faker->latitude,
-                    'longitude' => $faker->longitude
+                    'latitude' => $faker->latitude(-31.3, -31.5),
+                    'longitude' => $faker->longitude(-64.1, -64.3)
                 ]
             );
         }
