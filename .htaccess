@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^laburen.com
+RewriteRule ^(.*)$ laburen.com/$1 [L]
