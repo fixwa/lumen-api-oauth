@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -16,11 +17,11 @@ class UserController extends Controller
 
         // @see \App\Http\Middleware\Authenticate
         // Guarded routes:
-        $this->middleware('oauth', ['except' => ['index', 'show', 'store', 'signup', 'update']]);
+        //  $this->middleware('oauth', ['except' => ['index', 'show', 'store', 'signup', 'update']]);
 
         // @see \App\Http\Middleware\Authorize
         // @see this controller' isAuthorized() method
-        $this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store', 'signup', 'update']]);
+        // $this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store', 'signup', 'update']]);
     }
 
     public function index()
@@ -122,6 +123,46 @@ class UserController extends Controller
         return $this->success((object)[
             "message" => "The user with with id {$user->id} has been updated"
         ], 200);
+    }
+
+    public function updateImage(Request $request, $userId)
+    {
+        //$userId = $request->get('id');
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return $this->error("The user with {$userId} doesn't exist", 404);
+        }
+
+        if ($request->hasFile('photo')) {
+            $photoFile = $request->file('photo');
+
+            if ($photoFile->isValid()) {
+                $rPath = '/uploads/users/' . $userId . '/profile/';
+                $uploadPath = base_path('/public' . $rPath);
+                $fileName = 'profile.' . strtolower($photoFile->getClientOriginalExtension());
+
+                if (!File::exists($uploadPath)) {
+                    File::makeDirectory($uploadPath, $mode = 0777, true, true);
+                } else if (File::exists($uploadPath . $fileName)) {
+
+                    File::move($uploadPath . $fileName, $uploadPath . str_ireplace('profile', 'profile_' . time(), $fileName));
+                }
+
+                $path = $request->photo->move($uploadPath, $fileName);
+
+                $url = 'http://www.laburen.com/' . $rPath . '/' . $fileName;
+
+                $user->imageUrl = $url;
+
+                $user->save();
+            }
+        }
+
+        $files = $request->allFiles();
+
+        dd($files);
     }
 
     public function destroy($id)
