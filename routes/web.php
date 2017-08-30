@@ -28,7 +28,7 @@ $app->delete('/posts/{post_id}', 'PostController@destroy');
 $app->get('/users/', 'UserController@index');
 $app->post('/users/', 'UserController@store');
 $app->get('/users/{user_id}', 'UserController@show');
-$app->put('/users/{user_id}', 'UserController@update');
+$app->put('/user/profile', 'UserController@update');
 $app->patch('/users/{user_id}', 'UserController@update');
 $app->delete('/users/{user_id}', 'UserController@destroy');
 

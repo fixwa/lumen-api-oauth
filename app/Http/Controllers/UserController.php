@@ -1,27 +1,34 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers;
 
 use App\User;
-
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-class UserController extends Controller{
+class UserController extends Controller
+{
 
-	public function __construct(){
+    public function __construct()
+    {
 
-		$this->middleware('oauth', ['except' => ['index', 'show', 'store', 'signup']]);
-		$this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store', 'signup']]);
-	}
+        // @see \App\Http\Middleware\Authenticate
+        // Guarded routes:
+        $this->middleware('oauth', ['except' => ['index', 'show', 'store', 'signup', 'update']]);
 
-	public function index(){
+        // @see \App\Http\Middleware\Authorize
+        // @see this controller' isAuthorized() method
+        $this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store', 'signup', 'update']]);
+    }
 
-		$users = User::all();
-		return $this->success($users, 200);
-	}
+    public function index()
+    {
+
+        $users = User::all();
+        return $this->success($users, 200);
+    }
 
     /**
      * Creates a new User and returns an authorization Token as well.
@@ -44,7 +51,7 @@ class UserController extends Controller{
         $user = User::create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
-            'password'=> Hash::make($request->get('password')),
+            'password' => Hash::make($request->get('password')),
             'imageUrl' => 'http://laburen.com/default_user.png'
         ]);
 
@@ -54,92 +61,109 @@ class UserController extends Controller{
 
         return $this->success([
             "token" => $auth,
-            "user_profile"=> $user
+            "user_profile" => $user
         ], 201);
-	}
+    }
 
-	public function store(Request $request){
+    public function store(Request $request)
+    {
 
-		$this->validateRequest($request);
+        $this->validateRequest($request);
 
-		$user = User::create([
-		            'name' => $request->get('name'),
-					'email' => $request->get('email'),
-					'password'=> Hash::make($request->get('password'))
-				]);
+        $user = User::create([
+            'name' => $request->get('name'),
+            'email' => $request->get('email'),
+            'password' => Hash::make($request->get('password'))
+        ]);
 
-		return $this->success([
+        return $this->success([
             "message" => "The user with with id {$user->id} has been created",
             "status" => "AUTHENTICATED",
         ], 201);
-	}
+    }
 
-	public function show($id){
+    public function show($id)
+    {
 
-		$user = User::find($id);
+        $user = User::find($id);
 
-		if(!$user){
-			return $this->error("The user with {$id} doesn't exist", 404);
-		}
+        if (!$user) {
+            return $this->error("The user with {$id} doesn't exist", 404);
+        }
 
-		return $this->success($user, 200);
-	}
+        return $this->success($user, 200);
+    }
 
-	public function update(Request $request, $id){
+    public function update(Request $request)
+    {
 
-		$user = User::find($id);
+        $id = $request->get('id');
 
-		if(!$user){
-			return $this->error("The user with {$id} doesn't exist", 404);
-		}
+        $user = User::find($id);
 
-		$this->validateRequest($request);
+        if (!$user) {
+            return $this->error("The user with {$id} doesn't exist", 404);
+        }
 
-		$user->email 		= $request->get('email');
-		$user->password 	= Hash::make($request->get('password'));
+        $this->validateRequest($request);
 
-		$user->save();
+        if ($request->has('name')) {
+            $user->name = $request->get('name');
+        }
+        if ($request->has('email')) {
+            $user->name = $request->get('email');
+        }
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->get('password'));
+        }
 
-		return $this->success("The user with with id {$user->id} has been updated", 200);
-	}
+        $user->save();
 
-	public function destroy($id){
+        return $this->success((object)[
+            "message" => "The user with with id {$user->id} has been updated"
+        ], 200);
+    }
 
-		$user = User::find($id);
+    public function destroy($id)
+    {
 
-		if(!$user){
-			return $this->error("The user with {$id} doesn't exist", 404);
-		}
+        $user = User::find($id);
 
-		$user->delete();
+        if (!$user) {
+            return $this->error("The user with {$id} doesn't exist", 404);
+        }
 
-		return $this->success("The user with with id {$id} has been deleted", 200);
-	}
+        $user->delete();
 
-	public function validateRequest(Request $request){
+        return $this->success("The user with with id {$id} has been deleted", 200);
+    }
 
-		$rules = [
+    public function validateRequest(Request $request)
+    {
+
+        $rules = [
             'name' => 'required|min:5',
-			'email' => 'required|email|unique:users', 
-			'password' => 'required|min:6'
-		];
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6'
+        ];
 
-		try {
+        try {
             $this->validate($request, $rules);
         } catch (ValidationException $exception) {
-		    $errorObj = (object) [
-		        'type' => $exception->getMessage(),
+            $errorObj = (object)[
+                'type' => $exception->getMessage(),
                 'description' => $exception->response->getContent(),
             ];
-		    return new JsonResponse($errorObj, 406);
+            return new JsonResponse($errorObj, 406);
         }
-	}
+    }
 
-	public function isAuthorized(Request $request){
+    public function isAuthorized(Request $request)
+    {
 
-		$resource = "users";
-		// $user     = User::find($this->getArgs($request)["user_id"]);
+        $resource = "users";
+        // $user     = User::find($this->getArgs($request)["user_id"]);
 
-		return $this->authorizeUser($request, $resource);
-	}
+        return $this->authorizeUser($request, $resource);
+    }
 }
