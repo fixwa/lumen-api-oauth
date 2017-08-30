@@ -4,21 +4,58 @@ namespace App\Http\Controllers;
 
 use App\User;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller{
 
 	public function __construct(){
 
-		$this->middleware('oauth', ['except' => ['index', 'show', 'store']]);
-		$this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store']]);
+		$this->middleware('oauth', ['except' => ['index', 'show', 'store', 'signup']]);
+		$this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store', 'signup']]);
 	}
 
 	public function index(){
 
 		$users = User::all();
 		return $this->success($users, 200);
+	}
+
+    /**
+     * Creates a new User and returns an authorization Token as well.
+     * Example Post Request params:
+     *  {
+     *   "email":"fixwah@gmail.com",
+     *   "password":"12345678",
+     *   "name": "Pablito",
+     *   "client_id": "id0",
+     *   "client_secret":"secret0",
+     *   "grant_type": "password"
+     *   }
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function signup(Request $request)
+    {
+        $this->validateRequest($request);
+
+        $user = User::create([
+            'name' => $request->get('name'),
+            'email' => $request->get('email'),
+            'password'=> Hash::make($request->get('password')),
+            'imageUrl' => 'http://laburen.com/default_user.png'
+        ]);
+
+        $request->offsetSet('username', $request->get('email'));
+
+        $auth = app('oauth2-server.authorizer')->issueAccessToken();
+
+        return $this->success([
+            "token" => $auth,
+            "user_profile"=> $user
+        ], 201);
 	}
 
 	public function store(Request $request){
@@ -82,12 +119,20 @@ class UserController extends Controller{
 	public function validateRequest(Request $request){
 
 		$rules = [
-            'name' => 'required|min:6',
+            'name' => 'required|min:5',
 			'email' => 'required|email|unique:users', 
 			'password' => 'required|min:6'
 		];
 
-		$this->validate($request, $rules);
+		try {
+            $this->validate($request, $rules);
+        } catch (ValidationException $exception) {
+		    $errorObj = (object) [
+		        'type' => $exception->getMessage(),
+                'description' => $exception->response->getContent(),
+            ];
+		    return new JsonResponse($errorObj, 406);
+        }
 	}
 
 	public function isAuthorized(Request $request){
