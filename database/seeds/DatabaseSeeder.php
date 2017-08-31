@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Pablo',
             'email' => 'fixwah@gmail.com',
             'password' => Hash::make('12345678'),
-            'imageUrl' => 'http://www.laburen.com/default_user.png',
+            'imageUrl' => env('APP_HOST') . 'default_user.png',
         ]);
 
         $this->call(OAuthClientSeeder::class);

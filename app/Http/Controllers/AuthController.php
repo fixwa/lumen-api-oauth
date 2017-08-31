@@ -4,16 +4,22 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\UserAccessToken;
-use App\UserSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use League\OAuth2\Server\Exception\InvalidCredentialsException;
+use LucaDegasperi\OAuth2Server\Authorizer;
 
 class AuthController extends Controller
 {
+
+    protected $authorizer;
+
+    public function __construct(Authorizer $authorizer)
+    {
+        $this->authorizer = $authorizer;
+    }
 
     /**
      * Creates a new User and returns an authorization Token as well.
@@ -42,7 +48,7 @@ class AuthController extends Controller
 
         $request->offsetSet('username', $request->get('email'));
 
-        $auth = app('oauth2-server.authorizer')->issueAccessToken();
+        $auth = $this->authorizer->issueAccessToken();
 
         return $this->success([
             "token" => $auth,
@@ -73,16 +79,39 @@ class AuthController extends Controller
             return $this->error($errorObj);
         }
 
-        $user = null;
-        /* @var $authorizer \LucaDegasperi\OAuth2Server\Authorizer */
-        $authorizer = app('oauth2-server.authorizer');
-        $auth = $authorizer->issueAccessToken();
+        try {
+            $auth = $this->authorizer->issueAccessToken();
+        } catch (InvalidCredentialsException $exception) {
+            return $this->error($exception->getMessage());
+        }
 
+        // @todo Check if we can find the user from the Authorizer somehow.
         $user = UserAccessToken::find($auth['access_token'])->session->user;
 
-        return $this->success([
+        if (!$user) {
+            return $this->error('Wrong email or password.');
+        }
+
+        return $this->success((object)[
             "token" => $auth,
-            "user_profile" => $user
+            "user_profile" => $user,
         ], 201);
+    }
+
+    public function logout(Request $request)
+    {
+        if ($this->authorizer->validateAccessToken()) {
+            $user = User::find($this->getUserId());
+
+            if (!$user) {
+                return $this->error('Not you. Wtf.');
+            }
+
+            $this->authorizer->getAccessToken()->expire();
+
+            return $this->success('Goodbye.');
+        }
+
+        return $this->error('Not Allowed.');
     }
 }

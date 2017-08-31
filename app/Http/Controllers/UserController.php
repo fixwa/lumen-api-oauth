@@ -113,7 +113,7 @@ class UserController extends Controller
                 }
 
                 $request->photo->move($uploadPath, $fileName);
-                $url = url($rPath . '/' . $fileName);
+                $url = env('APP_HOST') . $rPath . '/' . $fileName;
                 $user->imageUrl = $url;
                 $user->save();
             }

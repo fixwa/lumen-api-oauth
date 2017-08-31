@@ -12,17 +12,18 @@ class Controller extends BaseController{
     /**
      * Return a JSON response for success.
      *
-     * @param  array  $data
+     * @param  string|object  $data
      * @param  string $code
      * @return \Illuminate\Http\JsonResponse
      */
-	public function success($data, $code){
+	public function success($data, $code = null){
 	    if (is_string($data)) {
 	        $data = (object) [
                 'type' => 'SUCCESS',
                 'description' => $data,
             ];
         }
+        $code = is_null($code) ? 200 : $code;
 		return response()->json($data, $code);
 	}
 
@@ -40,8 +41,7 @@ class Controller extends BaseController{
                 'description' => $data,
             ];
         }
-
-        $code = is_null($code) ? 500 : 406;
+        $code = is_null($code) ? 500 : $code;
 		return response()->json($data, $code);
 	}
 

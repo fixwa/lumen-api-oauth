@@ -52,7 +52,7 @@ $app->post('/oauth/access_token', function() use ($app){
 
 $app->post('/signup', 'AuthController@signup');
 $app->post('/signin', 'AuthController@signin');
-$app->delete('/logout', 'AuthController@logout');
+$app->delete('/user/logout', 'AuthController@logout');
 
 
 // Markers
