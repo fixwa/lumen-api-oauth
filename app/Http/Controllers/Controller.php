@@ -17,18 +17,32 @@ class Controller extends BaseController{
      * @return \Illuminate\Http\JsonResponse
      */
 	public function success($data, $code){
+	    if (is_string($data)) {
+	        $data = (object) [
+                'type' => 'SUCCESS',
+                'description' => $data,
+            ];
+        }
 		return response()->json($data, $code);
 	}
 
     /**
      * Return a JSON response for error.
      *
-     * @param  array  $message
+     * @param  string|object  $data
      * @param  string $code
      * @return \Illuminate\Http\JsonResponse
      */
-	public function error($message, $code){
-		return response()->json($message, $code);
+	public function error($data, $code = null){
+        if (is_string($data)) {
+            $data = (object) [
+                'type' => 'ERROR',
+                'description' => $data,
+            ];
+        }
+
+        $code = is_null($code) ? 500 : 406;
+		return response()->json($data, $code);
 	}
 
     /**

@@ -31,41 +31,6 @@ class UserController extends Controller
         return $this->success($users, 200);
     }
 
-    /**
-     * Creates a new User and returns an authorization Token as well.
-     * Example Post Request params:
-     *  {
-     *   "email":"fixwah@gmail.com",
-     *   "password":"12345678",
-     *   "name": "Pablito",
-     *   "client_id": "id0",
-     *   "client_secret":"secret0",
-     *   "grant_type": "password"
-     *   }
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function signup(Request $request)
-    {
-        $this->validateRequest($request);
-
-        $user = User::create([
-            'name' => $request->get('name'),
-            'email' => $request->get('email'),
-            'password' => Hash::make($request->get('password')),
-            'imageUrl' => 'http://laburen.com/default_user.png'
-        ]);
-
-        $request->offsetSet('username', $request->get('email'));
-
-        $auth = app('oauth2-server.authorizer')->issueAccessToken();
-
-        return $this->success([
-            "token" => $auth,
-            "user_profile" => $user
-        ], 201);
-    }
-
     public function store(Request $request)
     {
 
@@ -127,8 +92,6 @@ class UserController extends Controller
 
     public function updateImage(Request $request, $userId)
     {
-        //$userId = $request->get('id');
-
         $user = User::find($userId);
 
         if (!$user) {
@@ -146,23 +109,16 @@ class UserController extends Controller
                 if (!File::exists($uploadPath)) {
                     File::makeDirectory($uploadPath, $mode = 0777, true, true);
                 } else if (File::exists($uploadPath . $fileName)) {
-
                     File::move($uploadPath . $fileName, $uploadPath . str_ireplace('profile', 'profile_' . time(), $fileName));
                 }
 
-                $path = $request->photo->move($uploadPath, $fileName);
-
-                $url = 'http://www.laburen.com/' . $rPath . '/' . $fileName;
-
+                $request->photo->move($uploadPath, $fileName);
+                $url = url($rPath . '/' . $fileName);
                 $user->imageUrl = $url;
-
                 $user->save();
             }
         }
-
-        $files = $request->allFiles();
-
-        dd($files);
+        return $this->success($user, 200);
     }
 
     public function destroy($id)

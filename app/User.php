@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -49,5 +50,15 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         }
 
         return false;
+    }
+
+    /**
+     * A User can have Many Sessions
+     *
+     * @return BelongsToMany|UserSession[]
+     */
+    public function sessions()
+    {
+        return $this->belongsToMany(UserSession::class, 'owner_id');
     }
 }

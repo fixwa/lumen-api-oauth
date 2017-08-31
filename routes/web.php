@@ -49,8 +49,10 @@ $app->post('/oauth/access_token', function() use ($app){
     return response()->json($app->make('oauth2-server.authorizer')->issueAccessToken());
 });
 
-// SignIn - Similar to above, but also provides extra user-info and token-info
-$app->post('/signup', 'UserController@signup');
+
+$app->post('/signup', 'AuthController@signup');
+$app->post('/signin', 'AuthController@signin');
+$app->delete('/logout', 'AuthController@logout');
 
 
 // Markers
