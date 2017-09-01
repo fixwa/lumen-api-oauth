@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use App\User;
 use Gate;
 
-class Controller extends BaseController{
+class Controller extends BaseController
+{
+    /**
+     * @var User
+     */
+    private $user;
 
     /**
      * Return a JSON response for success.
@@ -41,6 +47,7 @@ class Controller extends BaseController{
                 'description' => $data,
             ];
         }
+        Log::error($data->description);
         $code = is_null($code) ? 500 : $code;
 		return response()->json($data, $code);
 	}
@@ -56,14 +63,16 @@ class Controller extends BaseController{
      */
     protected function authorizeUser(Request $request, $resource, $arguments = []){
     	
-    	$user 	 = User::find($this->getUserId());
+    	$user 	 = $this->getAuthenticatedUser();
     	$action	 = $this->getAction($request); 
 
         // The ability string must match the string defined in App\Providers\AuthServiceProvider\ability()
         $ability = "{$action}-{$resource}";
 
     	// return $this->authorizeForUser($user, "{$action}-{$resource}", $data);
-    	return Gate::forUser($user)->allows($ability, $arguments);
+    	$gate = Gate::forUser($user);
+    	$allows = $gate->allows($ability, $arguments);
+        return $allows;
     }
 
     /**
@@ -107,5 +116,17 @@ class Controller extends BaseController{
      */
     protected function getArgs(Request $request){
         return $request->route()[2];
+    }
+
+    /**
+     * Returns the user that is lined to the Authorization token.
+     */
+    public function getAuthenticatedUser()
+    {
+        if ($this->user instanceof User) {
+            return $this->user;
+        }
+
+        return User::find($this->getUserId());
     }
 }

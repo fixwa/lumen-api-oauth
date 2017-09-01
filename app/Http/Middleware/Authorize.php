@@ -8,6 +8,7 @@ class Authorize {
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param \App\Http\Controllers\Controller $controller
      * @param  \Closure  $next
      * @return mixed
      */

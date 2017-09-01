@@ -40,7 +40,8 @@ class AuthServiceProvider extends ServiceProvider
         // Group & Define simillar Abilities
         $this->isOwner([
             'posts' => ['destroy', 'update'],
-            'comments' => ['destroy', 'update']
+            'comments' => ['destroy', 'update'],
+            'users' => ['updateImage'],
         ]);
 
         $this->isAdmin([
@@ -70,7 +71,16 @@ class AuthServiceProvider extends ServiceProvider
                    
                     if(is_null($arg))  { return false; }
 
-                    return $arg->user_id === $user->id || $user->is_admin;
+                    if ($arg instanceof User) {
+                        $argId = $arg->id;
+                    } else {
+                        $argId = $arg->user_id;
+                    }
+
+                    $userId = $user->id;
+                    $isAdmin = $user->is_admin;
+
+                    return $argId === $userId || $isAdmin;
                 });            
             }
         }

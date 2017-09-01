@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
@@ -14,14 +15,18 @@ class UserController extends Controller
 
     public function __construct()
     {
+        /**
+         * @see \App\Http\Middleware\Authenticate
+         * Guarded routes: (Requires the Authentication (Bearer) header)
+         */
+        $this->middleware('oauth', ['except' => ['index', 'show', 'store', 'update']]);
 
-        // @see \App\Http\Middleware\Authenticate
-        // Guarded routes:
-        //  $this->middleware('oauth', ['except' => ['index', 'show', 'store', 'signup', 'update']]);
-
-        // @see \App\Http\Middleware\Authorize
-        // @see this controller' isAuthorized() method
-        // $this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'store', 'signup', 'update']]);
+        /**
+         * @see \App\Http\Middleware\Authorize
+         * @see this controller' UserController::isAuthorized() method
+         *
+         */
+        $this->middleware('authorize:' . __CLASS__, ['except' => ['index', 'show', 'update']]);
     }
 
     public function index()
@@ -90,19 +95,28 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function updateImage(Request $request, $userId)
+    /**
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateImage(Request $request)
     {
-        $user = User::find($userId);
+        $user = $this->getAuthenticatedUser();
 
         if (!$user) {
-            return $this->error("The user with {$userId} doesn't exist", 404);
+            return $this->error("The user with {$user->id} doesn't exist", 404);
         }
 
         if ($request->hasFile('photo')) {
             $photoFile = $request->file('photo');
 
+            Log::info("Photo found");
+
             if ($photoFile->isValid()) {
-                $rPath = '/uploads/users/' . $userId . '/profile/';
+                Log::info("Photo Is Valid");
+
+                $rPath = '/uploads/users/' . $user->id . '/profile/';
                 $uploadPath = base_path('/public' . $rPath);
                 $fileName = 'profile.' . strtolower($photoFile->getClientOriginalExtension());
 
@@ -116,14 +130,19 @@ class UserController extends Controller
                 $url = env('APP_HOST') . $rPath . '/' . $fileName;
                 $user->imageUrl = $url;
                 $user->save();
+
+
+                Log::info("User updated");
             }
         }
+
+
+        Log::info("Success!");
         return $this->success($user, 200);
     }
 
     public function destroy($id)
     {
-
         $user = User::find($id);
 
         if (!$user) {
@@ -137,7 +156,6 @@ class UserController extends Controller
 
     public function validateRequest(Request $request)
     {
-
         $rules = [
             'name' => 'required|min:5',
             'email' => 'required|email|unique:users',
@@ -157,10 +175,14 @@ class UserController extends Controller
 
     public function isAuthorized(Request $request)
     {
-
         $resource = "users";
-        // $user     = User::find($this->getArgs($request)["user_id"]);
 
-        return $this->authorizeUser($request, $resource);
+        if ($request->has('user_id')) {
+            $user = User::find($request->get('user_id'));
+        } else {
+            $user = User::find($this->getUserId());
+        }
+
+        return $this->authorizeUser($request, $resource, $user);
     }
 }

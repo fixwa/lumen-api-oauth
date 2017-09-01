@@ -35,6 +35,7 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
         'name' => $faker->name,
         'email' => $faker->email,
         'password' => $hasher->make("secret"),
-        'is_admin' => mt_rand(0, 1)
+        'is_admin' => mt_rand(0, 1),
+        'imageUrl' => env('APP_HOST') . 'default_user.png',
     ];
 });

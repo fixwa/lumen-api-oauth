@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -53,13 +54,16 @@ class Handler extends ExceptionHandler
         }
 
         if($e instanceof NotFoundHttpException){
+            Log::error("Not found: " . $e->getMessage());
             return response()->json(['message' => 'Bad Request', 'code' => 400], 400);
         }
 
         if($e instanceof MethodNotAllowedHttpException){
+            Log::error("Method not allowed: " . $e->getMessage());
             return response()->json(['message' => 'Not Found', 'code' => 404], 404);
         }
 
+        Log::error("Unexpected Error: " . $e->getMessage());
         return response()->json(['message' => 'Unexpected Error', 'code' => 500], 500);
     }
 }
