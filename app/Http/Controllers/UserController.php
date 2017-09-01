@@ -111,11 +111,7 @@ class UserController extends Controller
         if ($request->hasFile('photo')) {
             $photoFile = $request->file('photo');
 
-            Log::info("Photo found");
-
             if ($photoFile->isValid()) {
-                Log::info("Photo Is Valid");
-
                 $rPath = '/uploads/users/' . $user->id . '/profile/';
                 $uploadPath = base_path('/public' . $rPath);
                 $fileName = 'profile.' . strtolower($photoFile->getClientOriginalExtension());
@@ -126,18 +122,15 @@ class UserController extends Controller
                     File::move($uploadPath . $fileName, $uploadPath . str_ireplace('profile', 'profile_' . time(), $fileName));
                 }
 
-                $request->photo->move($uploadPath, $fileName);
+                $filePath = $request->photo->move($uploadPath, $fileName);
                 $url = env('APP_HOST') . $rPath . '/' . $fileName;
                 $user->imageUrl = $url;
                 $user->save();
 
-
-                Log::info("User updated");
+                Log::info("Updated profile picture for User ID: [{$user->id}] for file: [{$filePath}]");
             }
         }
 
-
-        Log::info("Success!");
         return $this->success($user, 200);
     }
 
