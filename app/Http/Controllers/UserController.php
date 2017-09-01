@@ -124,7 +124,7 @@ class UserController extends Controller
 
                 $filePath = $request->photo->move($uploadPath, $fileName);
                 $url = env('APP_HOST') . $rPath . '/' . $fileName;
-                $user->imageUrl = $url;
+                $user->imageUrl = $url . '?ts=' . time();
                 $user->save();
 
                 Log::info("Updated profile picture for User ID: [{$user->id}] for file: [{$filePath}]");
