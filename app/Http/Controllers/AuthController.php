@@ -7,6 +7,7 @@ use App\UserAccessToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\ValidationException;
 use League\OAuth2\Server\Exception\InvalidCredentialsException;
 use LucaDegasperi\OAuth2Server\Authorizer;
@@ -18,6 +19,8 @@ class AuthController extends Controller
 
     public function __construct(Authorizer $authorizer)
     {
+        $this->middleware('oauth', ['except' => ['signup', 'signin', 'refreshToken']]);
+
         $this->authorizer = $authorizer;
     }
 
@@ -80,38 +83,44 @@ class AuthController extends Controller
         }
 
         try {
-            $auth = $this->authorizer->issueAccessToken();
+            $token = $this->authorizer->issueAccessToken();
         } catch (InvalidCredentialsException $exception) {
             return $this->error($exception->getMessage());
         }
 
         // @todo Check if we can find the user from the Authorizer somehow.
-        $user = UserAccessToken::find($auth['access_token'])->session->user;
+        $user = UserAccessToken::find($token['access_token'])->session->user;
 
         if (!$user) {
             return $this->error('Wrong email or password.');
         }
 
         return $this->success((object)[
-            "token" => $auth,
+            "token" => $token,
             "user_profile" => $user,
         ], 201);
     }
 
     public function logout(Request $request)
     {
-        if ($this->authorizer->validateAccessToken()) {
-            $user = User::find($this->getUserId());
+        $user = $this->getAuthenticatedUser();
 
-            if (!$user) {
-                return $this->error('Not you. Wtf.');
-            }
-
-            $this->authorizer->getAccessToken()->expire();
-
-            return $this->success('Goodbye.');
+        if (!$user) {
+            return $this->error('Not you. Wtf.');
         }
 
-        return $this->error('Not Allowed.');
+        $this->authorizer->getAccessToken()->expire();
+
+        return $this->success('Goodbye.');
+    }
+
+    public function deleteTokens(Request $request)
+    {
+
+    }
+
+    public function refreshToken(Request $request)
+    {
+        return Response::json($this->authorizer->issueAccessToken());
     }
 }

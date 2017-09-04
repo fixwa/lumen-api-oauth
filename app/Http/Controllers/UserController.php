@@ -90,9 +90,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return $this->success((object)[
-            "message" => "The user with with id {$user->id} has been updated"
-        ], 200);
+        return $this->success($user, 200);
     }
 
     /**

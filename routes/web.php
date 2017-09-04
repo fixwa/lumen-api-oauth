@@ -16,10 +16,14 @@ $app->get('/', function () use ($app) {
     return;
 });
 
+$app->get('/version', function () use ($app) {
+    return $app->version();
+});
+
 // Posts
-$app->get('/posts','PostController@index');
-$app->post('/posts','PostController@store');
-$app->get('/posts/{post_id}','PostController@show');
+$app->get('/posts', 'PostController@index');
+$app->post('/posts', 'PostController@store');
+$app->get('/posts/{post_id}', 'PostController@show');
 $app->put('/posts/{post_id}', 'PostController@update');
 $app->patch('/posts/{post_id}', 'PostController@update');
 $app->delete('/posts/{post_id}', 'PostController@destroy');
@@ -45,18 +49,20 @@ $app->patch('/posts/{post_id}/comments/{comment_id}', 'PostCommentController@upd
 $app->delete('/posts/{post_id}/comments/{comment_id}', 'PostCommentController@destroy');
 
 // Request an access token
-$app->post('/oauth/access_token', function() use ($app){
+$app->post('/oauth/access_token', function () use ($app) {
     return response()->json($app->make('oauth2-server.authorizer')->issueAccessToken());
 });
 
 
 $app->post('/signup', 'AuthController@signup');
 $app->post('/signin', 'AuthController@signin');
-$app->delete('/user/logout', 'AuthController@logout');
+$app->delete('/logout', 'AuthController@logout');
+$app->delete('/tokens', 'AuthController@deleteTokens');
+$app->post('/refreshtoken', 'AuthController@refreshToken');
 
 
 // Markers
-$app->get('/markers','MarkerController@index');
+$app->get('/markers', 'MarkerController@index');
 //$app->post('/posts','PostController@store');
 //$app->get('/posts/{post_id}','PostController@show');
 //$app->put('/posts/{post_id}', 'PostController@update');
