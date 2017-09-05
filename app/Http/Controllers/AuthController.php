@@ -122,4 +122,23 @@ class AuthController extends Controller
     {
         return response()->json($this->authorizer->issueAccessToken());
     }
+
+    public function validateRequest(Request $request)
+    {
+        $rules = [
+            'name' => 'required|min:5',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6'
+        ];
+
+        try {
+            $this->validate($request, $rules);
+        } catch (ValidationException $exception) {
+            $errorObj = (object)[
+                'type' => $exception->getMessage(),
+                'description' => $exception->response->getContent(),
+            ];
+            return new JsonResponse($errorObj, 406);
+        }
+    }
 }
