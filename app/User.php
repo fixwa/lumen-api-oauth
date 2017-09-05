@@ -3,13 +3,12 @@
 namespace App;
 
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Laravel\Lumen\Auth\Authorizable;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Lumen\Auth\Authorizable;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
@@ -55,10 +54,20 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     /**
      * A User can have Many Sessions
      *
-     * @return BelongsToMany|UserSession[]
+     * @return HasMany|UserSession[]
      */
     public function sessions()
     {
-        return $this->belongsToMany(UserSession::class, 'owner_id');
+        return $this->hasMany(UserSession::class, 'owner_id');
+    }
+
+    /**
+     * User has many Tweets.
+     *
+     * @return HasMany|Tweet[]
+     */
+    public function tweets()
+    {
+        return $this->hasMany(Tweet::class, 'user_id', 'id');
     }
 }

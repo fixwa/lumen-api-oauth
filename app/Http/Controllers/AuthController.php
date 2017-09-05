@@ -7,7 +7,6 @@ use App\UserAccessToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\ValidationException;
 use League\OAuth2\Server\Exception\InvalidCredentialsException;
 use LucaDegasperi\OAuth2Server\Authorizer;
@@ -119,8 +118,8 @@ class AuthController extends Controller
 
     }
 
-    public function refreshToken(Request $request)
+    public function refreshToken()
     {
-        return Response::json($this->authorizer->issueAccessToken());
+        return response()->json($this->authorizer->issueAccessToken());
     }
 }

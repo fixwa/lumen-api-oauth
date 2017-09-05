@@ -63,8 +63,18 @@ $app->post('/refreshtoken', 'AuthController@refreshToken');
 
 // Markers
 $app->get('/markers', 'MarkerController@index');
-//$app->post('/posts','PostController@store');
-//$app->get('/posts/{post_id}','PostController@show');
-//$app->put('/posts/{post_id}', 'PostController@update');
-//$app->patch('/posts/{post_id}', 'PostController@update');
-//$app->delete('/posts/{post_id}', 'PostController@destroy');
+
+
+// Tweets
+$app->get('/tweet', 'TweetController@index');
+$app->post('/tweet', 'TweetController@store');
+$app->get('/tweet/{id}', 'TweetController@view');
+$app->put('/tweet/{id}', 'TweetController@update');
+$app->delete('/tweet/{id}', 'TweetController@destroy');
+/**
+ * app.get(prefix_api + '/tweet', userController.apiRequestAuthorization, tweetController.getListOfTweets);
+ * app.post(prefix_api + '/tweet', userController.apiRequestAuthorization, tweetController.createNewTweet);
+ * app.get(prefix_api + '/tweet/:id', userController.apiRequestAuthorization, tweetController.getTweetById);
+ * app.put(prefix_api + '/tweet/:id', userController.apiRequestAuthorization, tweetController.updateTweet);
+ * app.delete(prefix_api + '/tweet/:id', userController.apiRequestAuthorization, tweetController.deleteTweetById);
+ */
