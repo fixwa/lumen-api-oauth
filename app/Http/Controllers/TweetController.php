@@ -24,9 +24,24 @@ class TweetController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tweets = Tweet::whereNull('deleted_at')->with('user')->get();
+        if ($request->has('feel')) {
+            $feel = $request->get('feel');
+
+            //@todo For some reason a WHERE `=` always returns ALL items
+            //      however a WHERE `LIKE` actually filters the results.
+            $tweets = Tweet::where('feel', 'like', '%' . $feel . '%')
+                ->whereNull('deleted_at')
+                ->with('user')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $tweets = Tweet::whereNull('deleted_at')
+                ->with('user')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
 
         return response()->json($tweets);
     }
