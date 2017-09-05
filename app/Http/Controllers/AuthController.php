@@ -18,7 +18,7 @@ class AuthController extends Controller
 
     public function __construct(Authorizer $authorizer)
     {
-        $this->middleware('oauth', ['except' => ['signup', 'signin', 'refreshToken']]);
+        $this->middleware('oauth', ['except' => ['signup', 'signin']]);
 
         $this->authorizer = $authorizer;
     }
@@ -115,7 +115,14 @@ class AuthController extends Controller
 
     public function deleteTokens(Request $request)
     {
+        $user = $this->getAuthenticatedUser();
+        $sessions = $user->sessions();
 
+        foreach ($sessions as $session) {
+            $session->accessToken()->delete();
+        }
+
+        return $this->success('All tokens deleted.');
     }
 
     public function refreshToken()

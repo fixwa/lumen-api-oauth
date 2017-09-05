@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Log;
-use Laravel\Lumen\Routing\Controller as BaseController;
-use Illuminate\Http\Request;
 use App\User;
 use Gate;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Laravel\Lumen\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
@@ -120,6 +120,8 @@ class Controller extends BaseController
 
     /**
      * Returns the user that is lined to the Authorization token.
+     *
+     * @return User
      */
     public function getAuthenticatedUser()
     {
