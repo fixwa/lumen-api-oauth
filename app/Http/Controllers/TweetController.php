@@ -31,7 +31,7 @@ class TweetController extends Controller
 
             //@todo For some reason a WHERE `=` always returns ALL items
             //      however a WHERE `LIKE` actually filters the results.
-            $tweets = Tweet::where('feel', 'like', '%' . $feel . '%')
+            $tweets = Tweet::where('feel', 'like', $feel)
                 ->whereNull('deleted_at')
                 ->with('user')
                 ->orderBy('created_at', 'desc')
