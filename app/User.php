@@ -70,4 +70,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->hasMany(Tweet::class, 'user_id', 'id');
     }
+
+    /**
+     * User has many Abilities.
+     *
+     * @return HasMany|UserAbility[]
+     */
+    public function abilities()
+    {
+        return $this->hasMany(UserAbility::class, 'user_id', 'id');
+    }
 }

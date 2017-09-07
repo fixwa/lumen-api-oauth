@@ -37,6 +37,8 @@ $app->patch('/users/{user_id}', 'UserController@update');
 $app->post('/user/profile/image', 'UserController@updateImage');
 $app->delete('/users/{user_id}', 'UserController@destroy');
 
+$app->post('/user/ability', 'AbilityController@store');
+
 // Comments
 $app->get('/comments', 'CommentController@index');
 $app->get('/comments/{comment_id}', 'CommentController@show');

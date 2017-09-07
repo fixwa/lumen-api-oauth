@@ -18,7 +18,7 @@ class AuthController extends Controller
 
     public function __construct(Authorizer $authorizer)
     {
-        $this->middleware('oauth', ['except' => ['signup', 'signin']]);
+        $this->middleware('oauth', ['except' => ['signup', 'signin', 'refreshToken']]);
 
         $this->authorizer = $authorizer;
     }
