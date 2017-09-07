@@ -38,6 +38,7 @@ $app->post('/user/profile/image', 'UserController@updateImage');
 $app->delete('/users/{user_id}', 'UserController@destroy');
 
 $app->post('/user/ability', 'AbilityController@store');
+$app->get('/user/abilities', 'AbilityController@index');
 
 // Comments
 $app->get('/comments', 'CommentController@index');

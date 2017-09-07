@@ -27,24 +27,13 @@ class AbilityController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->has('feel')) {
-            $feel = $request->get('feel');
+        $abilities = UserAbility::whereNull('deleted_at')
+            ->where('user_id', $this->getUserId())
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-            //@todo For some reason a WHERE `=` always returns ALL items
-            //      however a WHERE `LIKE` actually filters the results.
-            $tweets = Tweet::where('feel', 'like', $feel)
-                ->whereNull('deleted_at')
-                ->with('user')
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } else {
-            $tweets = Tweet::whereNull('deleted_at')
-                ->with('user')
-                ->orderBy('created_at', 'desc')
-                ->get();
-        }
-
-        return response()->json($tweets);
+        return response()->json($abilities);
     }
 
     /**
