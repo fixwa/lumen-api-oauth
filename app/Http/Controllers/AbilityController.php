@@ -27,8 +27,10 @@ class AbilityController extends Controller
      */
     public function index(Request $request)
     {
+        $userId = $this->getUserId();
+
         $abilities = UserAbility::whereNull('deleted_at')
-            ->where('user_id', $this->getUserId())
+            ->where('user_id', $userId)
             ->with('user')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -37,7 +39,7 @@ class AbilityController extends Controller
     }
 
     /**
-     * Store a NEW Tweet.
+     * Store a NEW User Ability.
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
